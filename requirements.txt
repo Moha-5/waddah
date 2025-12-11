@@ -1,1 +1,6 @@
-
+joblib
+scikit-learn
+numpy
+scipy
+pandas
+notebook
