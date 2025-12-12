@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waddah - AI Phishing Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #1a1a1a;
+            flex: 1;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 10px 15px;
+            background: white;
+            border: 2px solid #e5e5e5;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .control-btn:hover {
+            background: #f5f5f5;
+            border-color: #d4a574;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background: #1a1a1a;
+        }
+
+        body.dark-mode .logo {
+            color: #ffffff;
+        }
+
+        body.dark-mode .card {
+            background: #2a2a2a;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .control-btn {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #ffffff;
+        }
+
+        body.dark-mode .control-btn:hover {
+            background: #3a3a3a;
+            border-color: #d4a574;
+        }
+
+        body.dark-mode .tab {
+            background: #3a3a3a;
+            color: #ccc;
+        }
+
+        body.dark-mode .tab:hover {
+            background: #444;
+        }
+
+        body.dark-mode .tab.active {
+            background: #d4a574;
+            color: white;
+        }
+
+        body.dark-mode label {
+            color: #ffffff;
+        }
+
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="email"],
+        body.dark-mode textarea {
+            background: #3a3a3a;
+            border-color: #444;
+            color: #ffffff;
+        }
+
+        body.dark-mode input[type="text"]:focus,
+        body.dark-mode input[type="email"]:focus,
+        body.dark-mode textarea:focus {
+            background: #444;
+            border-color: #d4a574;
+        }
+
+        body.dark-mode .loading p {
+            color: #ccc;
+        }
+
+        body.dark-mode .footer {
+            color: #999;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #666;
+        }
+
+        .tab:hover {
+            background: #e8e8e8;
+        }
+
+        .tab.active {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1a1a1a;
+            font-size: 1.05em;
+        }
+
+        input[type="text"], input[type="email"], textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e5e5e5;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            font-family: inherit;
+            background: #fafafa;
+        }
+
+        input[type="text"]:focus, input[type="email"]:focus, textarea:focus {
+            outline: none;
+            border-color: #d4a574;
+            background: white;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: #d4a574;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #c49563;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #d4a574;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            margin-top: 20px;
+            padding: 30px;
+            border-radius: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .result.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result.safe {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+        }
+
+        .result.suspicious {
+            background: #fff8e1;
+            border: 2px solid #ff9800;
+        }
+
+        .result.phishing {
+            background: #ffebee;
+            border: 2px solid #f44336;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .result-icon {
+            font-size: 3em;
+        }
+
+        .result-title {
+            flex: 1;
+        }
+
+        .result-title h3 {
+            margin-bottom: 5px;
+            font-size: 1.5em;
+        }
+
+        .result.safe .result-title h3 {
+            color: #2e7d32;
+        }
+
+        .result.suspicious .result-title h3 {
+            color: #f57c00;
+        }
+
+        .result.phishing .result-title h3 {
+            color: #c62828;
+        }
+
+        .risk-score {
+            font-size: 1.8em;
+            font-weight: bold;
+            padding: 12px 24px;
+            background: rgba(0,0,0,0.08);
+            border-radius: 10px;
+        }
+
+        .result-description {
+            margin: 15px 0;
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+
+        .result.safe .result-description {
+            color: #2e7d32;
+        }
+
+        .result.suspicious .result-description {
+            color: #f57c00;
+        }
+
+        .result.phishing .result-description {
+            color: #c62828;
+        }
+
+        .indicators {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .indicators h4 {
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            color: #1a1a1a;
+        }
+
+        .indicators ul {
+            margin-left: 20px;
+        }
+
+        .indicators li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+
+        .footer {
+            text-align: center;
+            color: #666;
+            margin-top: 30px;
+            font-size: 0.95em;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2em;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="controls">
+                <button class="control-btn" onclick="toggleLanguage()" id="lang-btn">
+                    <span>🌐</span>
+                    <span id="lang-text">عربي</span>
+                </button>
+                <button class="control-btn" onclick="connectGmail()" id="gmail-btn">
+                    <span>📬</span>
+                    <span id="gmail-text">Connect Gmail</span>
+                </button>
+            </div>
+            <div class="logo" id="logo">وضاح</div>
+            <div class="controls">
+                <button class="control-btn" onclick="toggleDarkMode()" id="theme-btn">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="card">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('email')">
+                    <span>📧</span>
+                    <span id="tab-email-text">Check Email</span>
+                </button>
+                <button class="tab" onclick="switchTab('message')">
+                    <span>💬</span>
+                    <span id="tab-message-text">Check Message</span>
+                </button>
+            </div>
+
+            <div style="margin-bottom:20px;">
+              <button class="btn" onclick="loadGmailMessages()" id="load-gmail-btn">📥 Load Inbox from Gmail</button>
+            </div>
+
+            <div id="gmail-message-list" style="margin-bottom:15px;"></div>
+
+            <!-- Email Tab -->
+            <div id="email-tab" class="tab-content active">
+                <div class="input-group">
+                    <label for="sender-email" id="label-sender">Sender Email Address:</label>
+                    <input type="email" id="sender-email" placeholder="e.g., support@paypal.com">
+                </div>
+
+                <div class="input-group">
+                    <label for="email-subject" id="label-subject">Email Subject:</label>
+                    <input type="text" id="email-subject" placeholder="e.g., Verify Your Account">
+                </div>
+
+                <div class="input-group">
+                    <label for="email-content" id="label-email-content">Email Content:</label>
+                    <textarea id="email-content" placeholder="Paste the full email content here..."></textarea>
+                </div>
+
+                <button class="btn" onclick="analyzeEmail()" id="btn-analyze-email">🔍 Analyze Email</button>
+
+                <div class="loading" id="email-loading">
+                    <div class="spinner"></div>
+                    <p id="email-loading-text">Analyzing email with AI...</p>
+                </div>
+
+                <div class="result" id="email-result"></div>
+            </div>
+
+            <!-- Message Tab -->
+            <div id="message-tab" class="tab-content">
+                <div class="input-group">
+                    <label for="message-content" id="label-message-content">Message Content:</label>
+                    <textarea id="message-content" placeholder="Paste any suspicious message, SMS, or text here..." style="min-height: 250px;"></textarea>
+                </div>
+
+                <button class="btn" onclick="analyzeMessage()" id="btn-analyze-message">🔍 Analyze Message</button>
+
+                <div class="loading" id="message-loading">
+                    <div class="spinner"></div>
+                    <p id="message-loading-text">Analyzing message with AI...</p>
+                </div>
+
+                <div class="result" id="message-result"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p id="footer-text">© 2024 Waddah | Stay Safe Online</p>
+        </div>
+    </div>
+
+    <script>
+        let currentLanguage = 'en';
+        let isDarkMode = false;
+
+        const translations = {
+            en: {
+                logo: 'Waddah',
+                langBtn: 'عربي',
+                checkEmail: 'Check Email',
+                checkMessage: 'Check Message',
+                gmailConnect: 'Connect Gmail',
+                loadGmail: '📥 Load Inbox from Gmail',
+                senderEmail: 'Sender Email Address:',
+                emailSubject: 'Email Subject:',
+                emailContent: 'Email Content:',
+                analyzeEmail: '🔍 Analyze Email',
+                messageContent: 'Message Content:',
+                analyzeMessage: '🔍 Analyze Message',
+                analyzing: 'Analyzing with AI...',
+                senderPlaceholder: 'e.g., support@paypal.com',
+                subjectPlaceholder: 'e.g., Verify Your Account',
+                contentPlaceholder: 'Paste the full email content here...',
+                messagePlaceholder: 'Paste any suspicious message, SMS, or text here...',
+                fillFields: 'Please fill in all email fields',
+                pasteMessage: 'Please paste a message to analyze',
+                spam: 'SPAM',
+                suspicious: 'SUSPICIOUS',
+                legitimate: 'LEGITIMATE',
+                spamDesc: 'This content contains multiple phishing indicators. Do not click any links, download attachments, or provide personal information. Delete this message immediately.',
+                suspiciousDesc: 'This content shows suspicious characteristics. Verify the sender through official channels before taking any action. Do not click links unless you can confirm authenticity.',
+                legitimateDesc: 'This content appears legitimate with no significant phishing indicators.',
+                analysisDetails: '🔍 Analysis Details:',
+                footer: '© 2024 Waddah | Stay Safe Online'
+            },
+            ar: {
+                logo: 'وضاح',
+                langBtn: 'English',
+                checkEmail: 'فحص البريد الإلكتروني',
+                checkMessage: 'فحص الرسالة',
+                gmailConnect: 'ربط جيميل',
+                loadGmail: '📥 تحميل الرسائل من جيميل',
+                senderEmail: 'عنوان البريد الإلكتروني للمرسل:',
+                emailSubject: 'موضوع البريد الإلكتروني:',
+                emailContent: 'محتوى البريد الإلكتروني:',
+                analyzeEmail: '🔍 تحليل البريد الإلكتروني',
+                messageContent: 'محتوى الرسالة:',
+                analyzeMessage: '🔍 تحليل الرسالة',
+                analyzing: 'جاري التحليل بالذكاء الاصطناعي...',
+                senderPlaceholder: 'مثال: support@paypal.com',
+                subjectPlaceholder: 'مثال: تأكيد حسابك',
+                contentPlaceholder: 'الصق محتوى البريد الإلكتروني الكامل هنا...',
+                messagePlaceholder: 'الصق أي رسالة مشبوهة أو رسالة نصية هنا...',
+                fillFields: 'يرجى ملء جميع حقول البريد الإلكتروني',
+                pasteMessage: 'يرجى لصق رسالة للتحليل',
+                spam: 'احتيال',
+                suspicious: 'مشبوه',
+                legitimate: 'آمن',
+                spamDesc: 'يحتوي هذا المحتوى على مؤشرات احتيال متعددة. لا تنقر على أي روابط أو تنزل مرفقات أو تقدم معلومات شخصية. احذف هذه الرسالة فوراً.',
+                suspiciousDesc: 'يُظهر هذا المحتوى خصائص مشبوهة. تحقق من المرسل عبر القنوات الرسمية قبل اتخاذ أي إجراء. لا تنقر على الروابط إلا إذا تمكنت من تأكيد صحتها.',
+                legitimateDesc: 'يبدو هذا المحتوى شرعياً دون مؤشرات احتيال كبيرة.',
+                analysisDetails: '🔍 تفاصيل التحليل:',
+                footer: '© 2024 وضاح | ابقَ آمناً على الإنترنت'
+            }
+        };
+        
+       async function connectGmail() {
+    const t = translations[currentLanguage];
+    try {
+ 
+        const response = await fetch('http://localhost:5000/gmail/connect');
+        const data = await response.json();
+
+        window.location.href = data.auth_url;
+    } catch (err) {
+        console.error("Error connecting to Gmail:", err);
+        alert(t.gmailConnect + ' - ' + 'Error with backend connection');
+    }
+}
+
+
+        async function loadGmailMessages() {
+     const t = translations[currentLanguage];
+     try {
+         const response = await fetch('http://localhost:5000/gmail/messages');
+         const data = await response.json();
+         
+         if (data.error) {
+             alert('Failed to load Gmail messages: ' + data.error);
+             return;
+         }
+         
+         let messageList = document.getElementById('gmail-message-list');
+         messageList.innerHTML = "";  
+         
+         data.messages.forEach(msg => {
+             const messageElement = document.createElement('div');
+             messageElement.innerHTML = `
+                 <strong>${msg.subject}</strong><br>
+                 From: ${msg.from} <br>
+                 Snippet: ${msg.snippet} <br><br>
+             `;
+             messageList.appendChild(messageElement);
+         });
+
+     } catch (err) {
+         console.error(err);
+         alert('Error loading Gmail messages');
+     }
+ }
+
+
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'ar' : 'en';
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            const t = translations[currentLanguage];
+            
+            document.getElementById('logo').textContent = t.logo;
+            document.getElementById('lang-text').textContent = t.langBtn;
+            document.getElementById('tab-email-text').textContent = t.checkEmail;
+            document.getElementById('tab-message-text').textContent = t.checkMessage;
+            document.getElementById('gmail-text').textContent = t.gmailConnect;
+            document.getElementById('load-gmail-btn').textContent = t.loadGmail;
+            
+            document.getElementById('label-sender').textContent = t.senderEmail;
+            document.getElementById('label-subject').textContent = t.emailSubject;
+            document.getElementById('label-email-content').textContent = t.emailContent;
+            document.getElementById('sender-email').placeholder = t.senderPlaceholder;
+            document.getElementById('email-subject').placeholder = t.subjectPlaceholder;
+            document.getElementById('email-content').placeholder = t.contentPlaceholder;
+            document.getElementById('btn-analyze-email').textContent = t.analyzeEmail;
+            document.getElementById('email-loading-text').textContent = t.analyzing;
+            
+            document.getElementById('label-message-content').textContent = t.messageContent;
+            document.getElementById('message-content').placeholder = t.messagePlaceholder;
+            document.getElementById('btn-analyze-message').textContent = t.analyzeMessage;
+            document.getElementById('message-loading-text').textContent = t.analyzing;
+            
+            document.getElementById('footer-text').textContent = t.footer;
+            
+            if (currentLanguage === 'ar') {
+                document.body.setAttribute('dir', 'rtl');
+            } else {
+                document.body.setAttribute('dir', 'ltr');
+            }
+        }
+
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode');
+            document.getElementById('theme-icon').textContent = isDarkMode ? '☀️' : '🌙';
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'email') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('email-tab').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('message-tab').classList.add('active');
+            }
+        }
+
+        function analyzeEmail() {
+            const t = translations[currentLanguage];
+            const senderEmail = document.getElementById('sender-email').value.trim();
+            const subject = document.getElementById('email-subject').value.trim();
+            const content = document.getElementById('email-content').value.trim();
+
+            if (!senderEmail || !subject || !content) {
+                alert(t.fillFields);
+                return;
+            }
+
+            const loading = document.getElementById('email-loading');
+            const resultDiv = document.getElementById('email-result');
+
+            loading.classList.add('active');
+            resultDiv.classList.remove('active');
+
+            setTimeout(() => {
+                const score = 75;
+                const indicators = [
+                    'Suspicious sender domain',
+                    'Urgency language detected',
+                    'Requests for personal information'
+                ];
+
+                displayResult(score, indicators, 'email-result');
+                loading.classList.remove('active');
+            }, 1500);
+        }
+
+        function analyzeMessage() {
+            const t = translations[currentLanguage];
+            const message = document.getElementById('message-content').value.trim();
+
+            if (!message) {
+                alert(t.pasteMessage);
+                return;
+            }
+
+            const loading = document.getElementById('message-loading');
+            const resultDiv = document.getElementById('message-result');
+
+            loading.classList.add('active');
+            resultDiv.classList.remove('active');
+
+            setTimeout(() => {
+                const score = 45; // Example score
+                const indicators = [
+                    'Contains suspicious links',
+                    'Requests urgent action'
+                ];
+
+                displayResult(score, indicators, 'message-result');
+                loading.classList.remove('active');
+            }, 1500);
+        }
+
+        function displayResult(score, indicators, resultId) {
+            const t = translations[currentLanguage];
+            const resultDiv = document.getElementById(resultId);
+            
+            let risk = 'safe';
+            let title = t.legitimate;
+            let description = t.legitimateDesc;
+            let icon = '✅';
+
+            if (score >= 80) {
+                risk = 'phishing';
+                title = t.spam;
+                description = t.spamDesc;
+                icon = '🚨';
+            } else if (score >= 50) {
+                risk = 'suspicious';
+                title = t.suspicious;
+                description = t.suspiciousDesc;
+                icon = '⚠️';
+            }
+
+            let indicatorsHTML = '';
+            if (indicators && indicators.length > 0) {
+                indicatorsHTML = `
+                    <div class="indicators">
+                        <h4>${t.analysisDetails}</h4>
+                        <ul>
+                            ${indicators.map(ind => `<li>${ind}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            resultDiv.className = `result ${risk} active`;
+            resultDiv.innerHTML = `
+                <div class="result-header">
+                    <div class="result-icon">${icon}</div>
+                    <div class="result-title">
+                        <h3>${title}</h3>
+                    </div>
+                    <div class="risk-score">${score}/100</div>
+                </div>
+                <div class="result-description">${description}</div>
+                ${indicatorsHTML}
+            `;
+        }
+    </script>
+</body>
+</html>
