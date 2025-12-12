@@ -14,11 +14,11 @@ from flask_cors import CORS
 # Gmail OAuth config
 # -----------------------------------------
 GOOGLE_CLIENT_SECRETS_FILE = (
-    "client_secret_326967540902-gu1g8sq6jgine3kr5o4ngdds4rm3hl3v."
+    "user_secret"
     "apps.googleusercontent.com.json"
 )
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
-REDIRECT_URI = "http://localhost:5000/oauth2callback"
+REDIRECT_URI = ""
 
 # -------------------------------------------------
 # Flask setup
@@ -372,3 +372,4 @@ def gmail_analyze_message(message_id):
 # -------------------------------------------------
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
+
