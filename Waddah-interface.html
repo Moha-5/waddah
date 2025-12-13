@@ -415,10 +415,6 @@
                     <span>🌐</span>
                     <span id="lang-text">عربي</span>
                 </button>
-                <button class="control-btn" onclick="connectGmail()" id="gmail-btn">
-                    <span>📬</span>
-                    <span id="gmail-text">Connect Gmail</span>
-                </button>
             </div>
             <div class="logo" id="logo">وضاح</div>
             <div class="controls">
@@ -440,12 +436,6 @@
                     <span id="tab-message-text">Check Message</span>
                 </button>
             </div>
-
-            <div style="margin-bottom:20px;">
-              <button class="btn" onclick="loadGmailMessages()" id="load-gmail-btn">📥 Load Inbox from Gmail</button>
-            </div>
-
-            <div id="gmail-message-list" style="margin-bottom:15px;"></div>
 
             <!-- Email Tab -->
             <div id="email-tab" class="tab-content active">
@@ -507,8 +497,6 @@
                 langBtn: 'عربي',
                 checkEmail: 'Check Email',
                 checkMessage: 'Check Message',
-                gmailConnect: 'Connect Gmail',
-                loadGmail: '📥 Load Inbox from Gmail',
                 senderEmail: 'Sender Email Address:',
                 emailSubject: 'Email Subject:',
                 emailContent: 'Email Content:',
@@ -536,8 +524,6 @@
                 langBtn: 'English',
                 checkEmail: 'فحص البريد الإلكتروني',
                 checkMessage: 'فحص الرسالة',
-                gmailConnect: 'ربط جيميل',
-                loadGmail: '📥 تحميل الرسائل من جيميل',
                 senderEmail: 'عنوان البريد الإلكتروني للمرسل:',
                 emailSubject: 'موضوع البريد الإلكتروني:',
                 emailContent: 'محتوى البريد الإلكتروني:',
@@ -561,52 +547,6 @@
                 footer: '© 2024 وضاح | ابقَ آمناً على الإنترنت'
             }
         };
-        
-       async function connectGmail() {
-    const t = translations[currentLanguage];
-    try {
- 
-        const response = await fetch('http://localhost:5000/gmail/connect');
-        const data = await response.json();
-
-        window.location.href = data.auth_url;
-    } catch (err) {
-        console.error("Error connecting to Gmail:", err);
-        alert(t.gmailConnect + ' - ' + 'Error with backend connection');
-    }
-}
-
-
-        async function loadGmailMessages() {
-     const t = translations[currentLanguage];
-     try {
-         const response = await fetch('http://localhost:5000/gmail/messages');
-         const data = await response.json();
-         
-         if (data.error) {
-             alert('Failed to load Gmail messages: ' + data.error);
-             return;
-         }
-         
-         let messageList = document.getElementById('gmail-message-list');
-         messageList.innerHTML = "";  
-         
-         data.messages.forEach(msg => {
-             const messageElement = document.createElement('div');
-             messageElement.innerHTML = `
-                 <strong>${msg.subject}</strong><br>
-                 From: ${msg.from} <br>
-                 Snippet: ${msg.snippet} <br><br>
-             `;
-             messageList.appendChild(messageElement);
-         });
-
-     } catch (err) {
-         console.error(err);
-         alert('Error loading Gmail messages');
-     }
- }
-
 
         function toggleLanguage() {
             currentLanguage = currentLanguage === 'en' ? 'ar' : 'en';
@@ -620,7 +560,6 @@
             document.getElementById('lang-text').textContent = t.langBtn;
             document.getElementById('tab-email-text').textContent = t.checkEmail;
             document.getElementById('tab-message-text').textContent = t.checkMessage;
-            document.getElementById('gmail-text').textContent = t.gmailConnect;
             document.getElementById('load-gmail-btn').textContent = t.loadGmail;
             
             document.getElementById('label-sender').textContent = t.senderEmail;
